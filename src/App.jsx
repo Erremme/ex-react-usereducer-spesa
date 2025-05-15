@@ -13,16 +13,19 @@ export default function App() {
 ];
 
      // funzione per modificare la quantità di un prodotto
-     const updateProductQuantity = (product) => {
+     const updateProductQuantity = (product, event ) => {
+      const newQuantity = event.target.value;
         const updateProducts = addedProducts?.map(item => {
-          if(item.name === product.name) {
-             item.quantity += 1;
+          if(item.name === product.name && newQuantity > 0 && !newQuantity.includes(".")){ 
+             item.quantity = newQuantity;
           }
-          return item;
+           return item;
           
         })
-        setAddedProducts(updateProducts);
+        setAddedProducts([...updateProducts]);
        }
+
+
 
       // Funzione per aggiungere un prodotto al carrello
        const addToCart = (product) => {  
@@ -57,6 +60,13 @@ export default function App() {
           <li key={index}>
             {product.name} - {product.price} €
             <div>
+              <input 
+              type="number" 
+              min="1"
+              value={product.quantity}
+              
+              onChange={(e) => updateProductQuantity(product, e)}
+               />
             <button onClick={() =>  addToCart(product)} className="add">Aggiungi al carrello</button>
             <button onClick={() =>  removeFromCart(product)} className="add">Rimuovi dal carrello</button>
             </div>
