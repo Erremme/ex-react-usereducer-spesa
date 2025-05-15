@@ -1,48 +1,52 @@
 import { useState } from "react";
 
 export default function App() {
+  // useState per gestire lo stato del carrello
   const [addedProducts, setAddedProducts] = useState([]);
 
-
-
-  const products = [
+  // array di oggetti per i prodotti
+   const products = [
   { name: 'Mela', price: 0.5 },
   { name: 'Pane', price: 1.2 },
   { name: 'Latte', price: 1.0 },
   { name: 'Pasta', price: 0.7 },
 ];
 
+     // funzione per modificare la quantità di un prodotto
+     const updateProductQuantity = (product) => {
+        const updateProducts = addedProducts?.map(item => {
+          if(item.name === product.name) {
+             item.quantity += 1;
+          }
+          return item;
+          
+        })
+        setAddedProducts(updateProducts);
+       }
 
- 
-   /*const addToCart = (e) => {
-    const product = e.target.parentElement.innerText.split(' - ')[0];
-    const price = e.target.parentElement.innerText.split(' - ')[1].split(' €')[0];
-     const quantity = 1;
-     const newProduct = { name: product, price: price , quantity: quantity };
-    const existingProduct = addedProducts.find(item => item.name === product);
-    if(newProduct.name !== existingProduct?.name){
-       setAddedProducts([...addedProducts, newProduct]);
-    }*/
-
-       const addToCart = (product) => {
-        
+      // Funzione per aggiungere un prodotto al carrello
+       const addToCart = (product) => {  
         const productQuantity = 1;
         const newProduct = {...product, quantity: productQuantity };
         const existingProduct = addedProducts.find(item => item.name === product.name);
         if(!existingProduct){
-       setAddedProducts([...addedProducts, newProduct]);
-
+           return setAddedProducts([...addedProducts, newProduct]);
+       }else{
+        return updateProductQuantity(product);
        }
-      
-     
-
-    
-   
    
    }
-   
- 
 
+  // Funzione per rimuovere un prodotto dal carrello
+  const removeFromCart = (product) => {
+    const  productToRemove = addedProducts.find(item => item.name === product.name);
+    if(productToRemove){
+      const updatedProducts = addedProducts.filter(item => item.name !== product.name);
+      setAddedProducts(updatedProducts);
+  }
+}
+ 
+ let total = 0;
  console.log(addedProducts);
   return (
     <div>
@@ -52,7 +56,11 @@ export default function App() {
         {products.map((product, index) => (
           <li key={index}>
             {product.name} - {product.price} €
+            <div>
             <button onClick={() =>  addToCart(product)} className="add">Aggiungi al carrello</button>
+            <button onClick={() =>  removeFromCart(product)} className="add">Rimuovi dal carrello</button>
+            </div>
+           
           </li>
         ))}
       </ul>
@@ -70,6 +78,20 @@ export default function App() {
         </ul>
       </div>
     )}
+    {addedProducts && (
+      <div className="totale">
+        <h2>Totale</h2>
+        <p>
+          {addedProducts.reduce((acc, product) => {
+            total = acc + product.price * product.quantity;
+            
+            return total 
+          
+          }, 0.)} €
+        </p>
+      </div>
+    )}
     </div>
+    
   );
 }
