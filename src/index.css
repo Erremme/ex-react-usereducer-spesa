@@ -1,0 +1,15 @@
+.lista-spesa{
+  background-color: #f0f0f0;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+h1 {
+  font-size: 60px;
+}
+
+.lista-spesa ul {
+  font-size: 30px;
+  list-style: none;
+}
