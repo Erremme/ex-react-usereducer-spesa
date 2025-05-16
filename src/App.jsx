@@ -1,8 +1,45 @@
-import { useState } from "react";
+
+import { useReducer } from "react";
+
+ function cartReducer(addedProducts, action) {
+    switch (action.type){
+      case 'ADD_TO_CART':
+        const existingProduct = addedProducts.find(item => item.name === action.payload.name);
+        if(existingProduct){
+          action.payload.quantity = existingProduct.quantity + 1;
+        }else{
+          return [
+            ...addedProducts,
+            { ...action.payload, quantity: 1 }
+          ]
+        }
+       
+
+    case 'UPDATE_PRODUCT_QUANTITY':{
+      if (action.payload.quantity < 1 || isNaN(action.payload.quantity)) {
+        return addedProducts
+      }else {
+        return addedProducts.map((item) => item.name === action.payload.name ? 
+        { ...item, quantity: action.payload.quantity } : item);
+      }
+      
+    }
+      
+    case 'REMOVE_FROM_CART':
+      return addedProducts.filter(product => product.name !== action.payload);
+    default:
+      return addedProducts;
+  }   
+       
+  }
+
 
 export default function App() {
-  // useState per gestire lo stato del carrello
-  const [addedProducts, setAddedProducts] = useState([]);
+  
+  
+  const [addedProducts, dispatch] = useReducer(cartReducer, []);
+
+ 
 
   // array di oggetti per i prodotti
    const products = [
@@ -12,45 +49,10 @@ export default function App() {
   { name: 'Pasta', price: 0.7 },
 ];
 
-     // funzione per modificare la quantità di un prodotto
-     const updateProductQuantity = (product, event ) => {
-      const newQuantity = event.target.value;
-        const updateProducts = addedProducts?.map(item => {
-          if(item.name === product.name && newQuantity > 0 && !newQuantity.includes(".")){ 
-             item.quantity = newQuantity;
-          }
-           return item;
-          
-        })
-        setAddedProducts([...updateProducts]);
-       }
 
-
-
-      // Funzione per aggiungere un prodotto al carrello
-       const addToCart = (product) => {  
-        const productQuantity = 1;
-        const newProduct = {...product, quantity: productQuantity };
-        const existingProduct = addedProducts.find(item => item.name === product.name);
-        if(!existingProduct){
-           return setAddedProducts([...addedProducts, newProduct]);
-       }else{
-        return updateProductQuantity(product);
-       }
-   
-   }
-
-  // Funzione per rimuovere un prodotto dal carrello
-  const removeFromCart = (product) => {
-    const  productToRemove = addedProducts.find(item => item.name === product.name);
-    if(productToRemove){
-      const updatedProducts = addedProducts.filter(item => item.name !== product.name);
-      setAddedProducts(updatedProducts);
-  }
-}
  
  let total = 0;
- console.log(addedProducts);
+ 
   return (
     <div>
     <div className="lista-spesa">
@@ -58,17 +60,11 @@ export default function App() {
       <ul>
         {products.map((product, index) => (
           <li key={index}>
-            {product.name} - {product.price} €
+            {product.name} - {product.price.toFixed(2)} €
             <div>
-              <input 
-              type="number" 
-              min="1"
-              value={product.quantity}
-              
-              onChange={(e) => updateProductQuantity(product, e)}
-               />
-            <button onClick={() =>  addToCart(product)} className="add">Aggiungi al carrello</button>
-            <button onClick={() =>  removeFromCart(product)} className="add">Rimuovi dal carrello</button>
+       
+            <button onClick={() => dispatch({ type: 'ADD_TO_CART', payload: product })}>Aggiungi al carrello</button>
+           <button onClick={() => dispatch({ type: 'REMOVE_FROM_CART', payload: product.name })}>Rimuovi dal carrello</button>
             </div>
            
           </li>
@@ -80,9 +76,18 @@ export default function App() {
       <div className="carrello">
         <h2>Carrello</h2>
         <ul>
-          {addedProducts.map((product, index) => (
+          {  addedProducts.map((product, index) => (
             <li key={index}>
-              {product.name} - {product.price} € - Quantità: {product.quantity}
+              {product.name}  {product.price.toFixed(2)}  
+                <input
+                   type="number"
+                   min="1"
+                   value={product.quantity }
+                   onChange={e => dispatch({
+                    type: 'UPDATE_PRODUCT_QUANTITY',
+                    payload: { name: product.name, quantity: parseInt(e.target.value) }
+  })}
+/>
             </li>
           ))}
         </ul>
@@ -93,11 +98,11 @@ export default function App() {
         <h2>Totale</h2>
         <p>
           {addedProducts.reduce((acc, product) => {
-            total = acc + product.price * product.quantity;
-            
-            return total 
+            total = acc + (product.price * product.quantity);
+          ;
+            return total; 
           
-          }, 0.)} €
+          }, 0)} €
         </p>
       </div>
     )}
